@@ -483,9 +483,17 @@ window.logout = () => signOut(auth);
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    document.getElementById("lock").style.display = "none";
-    document.getElementById("main-page").style.display = "";
-    initApp();
+    if (user.email === "thesouscote@gmail.com") {
+      document.getElementById("lock").style.display = "none";
+      document.getElementById("main-page").style.display = "";
+      initApp();
+    } else {
+      signOut(auth);
+      const err = document.getElementById("pwd-err");
+      err.textContent = "Accès non autorisé pour cet email ❌";
+      err.style.opacity = "1";
+      setTimeout(() => { err.style.opacity = "0"; }, 3000);
+    }
   } else {
     document.getElementById("lock").style.display = "flex";
     document.getElementById("main-page").style.display = "none";
