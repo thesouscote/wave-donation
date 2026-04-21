@@ -932,12 +932,8 @@ window.testAlert = async () => {
     await fbSet("queue", {nom:"Test",montant:1000,message:"Ceci est un test !",confirmed:false,ts:Date.now()}, "POST");
     toast("🔔 Don test ajouté !"); setTimeout(()=>switchTab("dons"),800);
   }catch(e){ toast("⚠️ Erreur"); }
-  document.getElementById("lock").style.display = "none";
-  document.getElementById("main-page").style.display = "";
-  loadDons();
-} else {
-  setTimeout(()=>document.getElementById("pwd-input").focus(), 100);
-}
+};
+
 setInterval(loadDons, 5000);
 </script>
 </body>
