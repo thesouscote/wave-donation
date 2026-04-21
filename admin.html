@@ -219,11 +219,23 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
 
     <button id="login-btn" onclick="login()"
-      style="width:100%;padding:16px;background:linear-gradient(135deg, var(--acc), #0056b3);border:none;border-radius:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:all .3s;box-shadow:0 8px 24px rgba(10,132,255,0.3)">
+      style="width:100%;padding:16px;background:linear-gradient(135deg, var(--acc), #0056b3);border:none;border-radius:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:all .3s;box-shadow:0 8px 24px rgba(10,132,255,0.3);margin-bottom:14px">
       Se connecter
     </button>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;opacity:0.3">
+      <div style="flex:1;height:1px;background:#fff"></div>
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#fff">Ou</span>
+      <div style="flex:1;height:1px;background:#fff"></div>
+    </div>
+
+    <button id="google-btn" onclick="loginGoogle()"
+      style="width:100%;padding:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="">
+      Continuer avec Google
+    </button>
     
-    <div id="pwd-err" style="font-size:12px;color:var(--red);margin-top:16px;opacity:0;transition:opacity .2s;font-weight:600">Identifiants incorrects ❌</div>
+    <div id="pwd-err" style="font-size:12px;color:var(--red);margin-top:16px;opacity:0;transition:opacity .2s;font-weight:600">Accès refusé ❌</div>
   </div>
 </div>
 
@@ -422,10 +434,13 @@ import {
   ref, get, set, push, update, remove, onValue 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { 
-  signInWithEmailAndPassword, onAuthStateChanged, signOut 
+  signInWithEmailAndPassword, onAuthStateChanged, signOut,
+  GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // ── AUTH LOGIC ──
+const provider = new GoogleAuthProvider();
+
 window.login = async () => {
   const email = document.getElementById("email-input").value.trim();
   const pass = document.getElementById("pwd-input").value;
@@ -440,6 +455,7 @@ window.login = async () => {
   try {
     await signInWithEmailAndPassword(auth, email, pass);
   } catch (e) {
+    err.textContent = "Identifiants incorrects ❌";
     err.style.opacity = "1";
     document.getElementById("pwd-input").style.borderColor = "var(--red)";
     setTimeout(() => { 
@@ -448,6 +464,18 @@ window.login = async () => {
     }, 2500);
     btn.disabled = false;
     btn.textContent = "Se connecter";
+  }
+};
+
+window.loginGoogle = async () => {
+  const err = document.getElementById("pwd-err");
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    console.error(e);
+    err.textContent = "Erreur de connexion Google ❌";
+    err.style.opacity = "1";
+    setTimeout(() => { err.style.opacity = "0"; }, 2500);
   }
 };
 
