@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>OBS Top</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:transparent;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:flex-start;justify-content:flex-start;min-height:100vh;padding:24px}
+.w{display:flex;flex-direction:column;gap:6px;animation:ap .6s cubic-bezier(.34,1.2,.64,1) forwards}
+@keyframes ap{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+.ttl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-shadow:0 1px 8px rgba(0,0,0,.9);margin-bottom:4px}
+.it{display:flex;align-items:center;gap:10px;animation:si .4s cubic-bezier(.34,1.2,.64,1) both}
+@keyframes si{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rk{font-size:18px;width:28px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
+.inf{display:flex;align-items:center;gap:8px;background:rgba(10,10,18,.72);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:7px 12px}
+.nm{font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.sp{color:rgba(255,255,255,.2);font-size:12px}
+.mt{font-size:14px;font-weight:800;color:#30d158;letter-spacing:-.02em}
+</style>
+</head>
+<body>
+<div class="w" id="w">
+  <div class="ttl">🏆 Top Donateurs</div>
+  <div id="lst"></div>
+</div>
+<script type="module">
+import { db } from "./firebase-config.js";
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+function fmt(n){ return Number(n||0).toLocaleString("fr"); }
+
+let currentHistory = {};
+let topActif = false;
+
+function refreshUI() {
+  document.getElementById("w").style.display = topActif ? "" : "none";
+  if (!topActif) return;
+  
+  if (!currentHistory || typeof currentHistory !== "object") {
+    document.getElementById("lst").innerHTML = '<div style="font-size:13px;color:rgba(255,255,255,.4);text-shadow:0 1px 6px rgba(0,0,0,.9)">Aucun don</div>';
+    return;
+  }
+  
+  const agg = Object.values(currentHistory).reduce((a, d) => {
+    const k = d.nom || "Anonyme";
+    a[k] = (a[k] || 0) + (d.montant || 0);
+    return a;
+  }, {});
+  
+  const sorted = Object.entries(agg).sort(([, a], [, b]) => b - a).slice(0, 3);
+  const medals = ["🥇", "🥈", "🥉"];
+  
+  document.getElementById("lst").innerHTML = sorted.map(([nom, tot], i) => 
+    '<div class="it" style="animation-delay:' + (i * .08) + 's">' +
+    '<span class="rk">' + medals[i] + '</span>' +
+    '<div class="inf"><span class="nm">' + nom + '</span><span class="sp">·</span><span class="mt">' + fmt(tot) + ' FCFA</span></div>' +
+    '</div>'
+  ).join("");
+}
+
+// Écouter les réglages
+onValue(ref(db, "extras"), (snapshot) => {
+  const data = snapshot.val();
+  topActif = !!(data && data.topActif);
+  refreshUI();
+});
+
+// Écouter l'historique
+onValue(ref(db, "history"), (snapshot) => {
+  currentHistory = snapshot.val() || {};
+  refreshUI();
+});
+</script>
+</body>
+</html>

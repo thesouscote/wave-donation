@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>thesouscote — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--sur:#13131a;--sur2:#1c1c26;
+  --bor:rgba(255,255,255,0.07);--acc:#0a84ff;--ag:rgba(10,132,255,0.15);
+  --grn:#30d158;--gg:rgba(48,209,88,0.15);
+  --red:#ff453a;--rg:rgba(255,69,58,0.15);
+  --org:#ff9f0a;--txt:#f0f0f5;
+  --mut:rgba(240,240,245,0.4);--fnt:rgba(240,240,245,0.08)
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(10,132,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(10,132,255,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.page{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 0 100px}
+
+/* HEADER */
+.hdr{padding:52px 20px 20px;display:flex;align-items:flex-end;justify-content:space-between}
+.htag{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:6px}
+.htit{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.htit span{color:var(--acc)}
+.rbtn{width:40px;height:40px;border-radius:12px;background:var(--sur);border:1px solid var(--bor);color:var(--mut);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.rbtn:hover{color:var(--txt);border-color:var(--acc)}
+.rbtn.spin{animation:spin .6s linear}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* STATUS */
+.sbar{margin:0 20px 20px;padding:11px 16px;background:var(--sur);border:1px solid var(--bor);border-radius:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn);animation:pu 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.35}}
+.sbdg{margin-left:auto;font-size:12px;font-weight:700;color:var(--acc);background:var(--ag);padding:3px 10px;border-radius:99px}
+
+/* TABS */
+.tabs{display:flex;margin:0 20px 20px;background:var(--sur);border:1px solid var(--bor);border-radius:14px;padding:4px;gap:3px;overflow-x:auto}
+.tab{flex:1;padding:9px 6px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;border-radius:10px;transition:all .2s;white-space:nowrap;min-width:0}
+.tab.on{background:var(--sur2);color:var(--txt)}
+.tc{display:none}
+.tc.on{display:block;animation:fu .25s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* UTILS */
+.slbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--fnt);margin-bottom:10px}
+.pad{padding:0 20px;margin-bottom:10px}
+.empty{padding:40px 20px;text-align:center}
+.eico{font-size:32px;margin-bottom:8px;opacity:.4}
+.etxt{font-size:14px;font-weight:600;color:var(--mut)}
+.esub{font-size:12px;color:var(--fnt);margin-top:4px}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 20px 16px}
+.sbox{background:var(--sur);border:1px solid var(--bor);border-radius:16px;padding:16px 14px}
+.sv{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.sv.g{color:var(--grn)}.sv.a{color:var(--acc)}.sv.r{color:var(--red)}
+.sl{font-size:11px;color:var(--mut);margin-bottom:6px}
+.ss{font-size:10px;color:var(--fnt);margin-top:4px}
+
+/* CARDS */
+.card{margin:0 20px 12px;background:var(--sur);border:1px solid var(--bor);border-radius:20px;padding:18px}
+
+/* OBJECTIF */
+.otop{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.iw{width:68px;height:68px;border-radius:14px;background:var(--fnt);border:2px dashed rgba(255,255,255,.1);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border-color .2s}
+.iw:hover{border-color:var(--acc)}
+.iw img{width:100%;height:100%;object-fit:cover;display:none}
+.iph{font-size:26px;opacity:.3}
+.iov{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:18px}
+.iw:hover .iov{opacity:1}
+.ofl{flex:1;display:flex;flex-direction:column;gap:8px}
+.fi{width:100%;background:var(--fnt);border:1px solid var(--bor);border-radius:10px;padding:9px 12px;color:var(--txt);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--acc)}
+.fi::placeholder{color:rgba(240,240,245,.2)}
+.mr{display:flex;gap:8px;align-items:center}
+.mi{flex:1;background:var(--fnt);border:1px solid var(--bor);border-radius:10px;padding:9px 12px;color:var(--txt);font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.mi::-webkit-outer-spin-button,.mi::-webkit-inner-spin-button{-webkit-appearance:none}
+.mi:focus{border-color:var(--acc)}
+.mf{font-size:12px;color:var(--mut);white-space:nowrap}
+.pr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.pal{padding:5px 12px;border:1px solid var(--bor);border-radius:99px;font-size:11px;font-weight:700;color:var(--mut);background:var(--fnt);cursor:pointer;transition:all .18s}
+.pal:hover{border-color:var(--acc);color:var(--acc)}
+.pal.ok{border-color:var(--grn);color:var(--grn);background:var(--gg)}
+.sbtn2{width:100%;padding:12px;background:var(--acc);border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:all .2s}
+.sbtn2:hover{opacity:.85}
+.sbtn2:active{transform:scale(.98)}
+.pw{margin-top:16px;padding-top:16px;border-top:1px solid var(--bor)}
+.pt{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px}
+.pc{font-size:20px;font-weight:800;color:var(--grn)}
+.pg{font-size:12px;color:var(--mut)}
+.pb{height:12px;background:var(--fnt);border-radius:99px;overflow:hidden}
+.pf{height:100%;background:linear-gradient(90deg,#30d158,#34c759);border-radius:99px;transition:width .7s cubic-bezier(.34,1.2,.64,1);min-width:6px}
+.pp{text-align:right;font-size:11px;font-weight:700;color:var(--mut);margin-top:5px}
+
+/* DONS */
+.dlist{padding:0 20px;display:flex;flex-direction:column;gap:10px}
+.dc{background:var(--sur);border:1px solid var(--bor);border-radius:18px;overflow:hidden;animation:si .32s cubic-bezier(.34,1.2,.64,1) both}
+@keyframes si{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.dc.ok2{border-color:var(--grn)}
+.dc.ko2{border-color:var(--red)}
+.dc.ex{animation:ex .25s ease forwards;pointer-events:none}
+@keyframes ex{to{opacity:0;transform:translateX(30px) scale(.95)}}
+.db{padding:14px 16px 10px}
+.dt{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+.dn{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.dan{color:var(--mut);font-style:italic}
+.dm{font-size:18px;font-weight:800;color:var(--acc);white-space:nowrap}
+.df{font-size:10px;color:var(--mut)}
+.dmsg{font-size:12px;color:var(--mut);font-style:italic;padding:6px 10px;background:var(--fnt);border-radius:8px;margin-bottom:4px}
+.dmsg::before{content:'« '}.dmsg::after{content:' »'}
+.dti{font-size:11px;color:var(--fnt);margin-top:5px}
+.da{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--bor)}
+.ab{padding:13px 10px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s}
+.ab:first-child{border-right:1px solid var(--bor)}
+.ab.c{color:var(--grn)}.ab.c:hover{background:var(--gg)}
+.ab.d{color:var(--red)}.ab.d:hover{background:var(--rg)}
+
+/* HISTORIQUE */
+.hl{padding:0 20px;display:flex;flex-direction:column;gap:8px}
+.hi{background:var(--sur);border:1px solid var(--bor);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hi.can{border-color:rgba(255,69,58,.25)}
+.hnom{font-size:14px;font-weight:700}
+.hnom.r{color:var(--red)}
+.hmsg{font-size:12px;color:var(--mut);font-style:italic;margin-top:2px}
+.hmnt{font-size:15px;font-weight:800;color:var(--grn);white-space:nowrap}
+.hmnt.r{color:var(--red)}
+.hti{font-size:11px;color:var(--fnt);margin-top:2px;text-align:right}
+.reaf{padding:5px 12px;border:1px solid var(--acc);border-radius:8px;background:var(--ag);font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--acc);cursor:pointer;transition:all .18s;white-space:nowrap;margin-top:4px}
+.reaf:hover{background:var(--acc);color:#fff}
+
+/* RESET */
+.rc{margin:16px 20px 0;background:var(--sur);border:1px solid var(--bor);border-radius:20px;padding:18px}
+.rt{font-size:14px;font-weight:700;margin-bottom:6px}
+.rs{font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:14px}
+.reb{width:100%;padding:13px;border:1px solid rgba(255,69,58,.3);border-radius:12px;background:var(--rg);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--red);cursor:pointer;transition:all .2s}
+.reb:hover{background:rgba(255,69,58,.28)}
+
+/* EXTRAS */
+.er{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.et{font-size:14px;font-weight:700;color:var(--txt)}
+.es{font-size:12px;color:var(--mut);margin-top:2px}
+.tog{width:44px;height:26px;border-radius:99px;background:var(--fnt);border:1px solid var(--bor);cursor:pointer;position:relative;transition:background .25s;flex-shrink:0}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--mut);transition:all .25s}
+.tog.on{background:var(--grn);border-color:var(--grn)}
+.tog.on::after{left:calc(100% - 21px);background:#fff}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sb{padding:10px 12px;background:var(--fnt);border:1px solid var(--bor);border-radius:12px;font-size:13px;font-weight:600;color:var(--mut);cursor:pointer;text-align:center;transition:all .18s}
+.sb:hover{border-color:var(--acc);color:var(--txt)}
+.sb.on{border-color:var(--acc);color:var(--acc);background:var(--ag)}
+.msi{width:100%;background:var(--fnt);border:1px solid var(--bor);border-radius:12px;padding:12px 14px;color:var(--txt);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;resize:none;min-height:72px;transition:border-color .2s}
+.msi:focus{border-color:var(--acc)}
+.msi::placeholder{color:rgba(240,240,245,.2)}
+.eb{padding:10px 16px;border:1px solid var(--bor);border-radius:10px;background:var(--fnt);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--mut);cursor:pointer;transition:all .18s}
+.eb.g{border-color:var(--grn);color:var(--grn);background:var(--gg)}.eb.g:hover{background:var(--grn);color:#fff}
+.eb.r{border-color:var(--red);color:var(--red);background:var(--rg)}
+.eb:hover{border-color:var(--acc);color:var(--acc)}
+.ti{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bor)}
+.ti:last-child{border-bottom:none}
+.tr{font-size:16px;width:24px;flex-shrink:0}
+.tn{font-size:13px;font-weight:700;flex:1}
+.tm{font-size:13px;font-weight:800;color:var(--grn)}
+.uz{background:var(--fnt);border:2px dashed rgba(255,255,255,.1);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all .2s}
+.uz:hover{border-color:var(--acc);background:var(--ag)}
+.uz.has{border-color:var(--grn);border-style:solid;background:var(--gg)}
+.ui{font-size:24px;margin-bottom:6px}
+.ut{font-size:13px;font-weight:700;color:var(--mut)}.uz.has .ut{color:var(--grn)}
+.us{font-size:11px;color:var(--fnt);margin-top:3px}
+.aip{width:80px;height:80px;border-radius:14px;background:var(--fnt);border:2px dashed rgba(255,255,255,.1);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s}
+.aip:hover{border-color:var(--acc)}.aip:hover .iov{opacity:1}
+.aip img{width:100%;height:100%;object-fit:cover;display:none}
+
+/* OBS */
+.po{margin:0 20px}
+.ps{background:#0d0d1a;border:1px solid var(--bor);border-radius:20px;overflow:hidden;margin-bottom:12px}
+.pb2{padding:10px 14px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.ld{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);animation:bl 1.5s ease-in-out infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.pbd{padding:36px 20px;display:flex;align-items:center;justify-content:center}
+.pm{font-size:18px;font-weight:500;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.8);text-align:center;line-height:1.5}
+.ph{font-weight:800;color:#0a84ff}
+.psu{font-size:13px;color:rgba(255,255,255,.6);font-style:italic;margin-top:8px;text-align:center}
+.ub{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:12px 14px;font-size:12px;word-break:break-all;font-family:monospace;cursor:pointer;transition:border-color .2s;margin-bottom:4px}
+.ub:hover{border-color:var(--acc)}
+.ub.bl{color:var(--acc)}.ub.or{color:var(--org)}.ub.gr{color:var(--grn)}.ub.pu{color:#bf5af2}
+.uh{font-size:11px;color:var(--fnt);margin-bottom:14px;padding:0 2px}
+.pa{display:flex;gap:10px;margin-top:4px}
+.pbt{flex:1;padding:12px;border:1px solid var(--bor);border-radius:12px;background:var(--sur);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:var(--mut);cursor:pointer;transition:all .2s;text-align:center}
+.pbt:hover{border-color:var(--acc);color:var(--acc)}
+.pbt.pr2{background:var(--ag);border-color:var(--acc);color:var(--acc)}
+.pbt.pr2:hover{background:var(--acc);color:#fff}
+
+/* TOAST */
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--sur2);border:1px solid var(--bor);border-radius:99px;padding:12px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--txt);white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;z-index:200}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<!-- LOCK SCREEN -->
+<div id="lock" style="position:fixed;inset:0;background:radial-gradient(circle at top right, #1a1a2e, #0a0a0f);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:380px;background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:32px;padding:40px 30px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.5)">
+    <div style="font-size:54px;margin-bottom:20px;filter:drop-shadow(0 0 15px rgba(10,132,255,0.3))">🔐</div>
+    <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;color:#fff;margin-bottom:8px">Panel Admin</h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.4);margin-bottom:32px;font-weight:500">thesouscote — Accès sécurisé</p>
+    
+    <div style="text-align:left;margin-bottom:18px">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--acc);margin-bottom:8px;margin-left:4px;letter-spacing:0.05em">Adresse Email</label>
+      <input id="email-input" type="email" placeholder="admin@exemple.com"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 18px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;outline:none;transition:all .2s"
+        onkeydown="if(event.key==='Enter') document.getElementById('pwd-input').focus()">
+    </div>
+
+    <div style="text-align:left;margin-bottom:28px">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--acc);margin-bottom:8px;margin-left:4px;letter-spacing:0.05em">Mot de passe</label>
+      <input id="pwd-input" type="password" placeholder="••••••••"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 18px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;outline:none;transition:all .2s;letter-spacing:0.2em"
+        onkeydown="if(event.key==='Enter') login()">
+    </div>
+
+    <button id="login-btn" onclick="login()"
+      style="width:100%;padding:16px;background:linear-gradient(135deg, var(--acc), #0056b3);border:none;border-radius:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:all .3s;box-shadow:0 8px 24px rgba(10,132,255,0.3)">
+      Se connecter
+    </button>
+    
+    <div id="pwd-err" style="font-size:12px;color:var(--red);margin-top:16px;opacity:0;transition:opacity .2s;font-weight:600">Identifiants incorrects ❌</div>
+  </div>
+</div>
+
+<div class="page" id="main-page" style="display:none">
+
+  <div class="hdr">
+    <div>
+      <div class="htag">thesouscote</div>
+      <div class="htit">Admin <span>Panel</span></div>
+    </div>
+    <button class="rbtn" id="rbtn" onclick="doRefresh()">↻</button>
+  </div>
+
+  <div class="sbar">
+    <div class="sdot"></div>
+    <span id="stxt">Chargement…</span>
+    <span class="sbdg" id="sbdg" style="display:none"></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on"  onclick="switchTab('dons')">🔔 Dons</button>
+    <button class="tab"     onclick="switchTab('obj')">🎯 Objectif</button>
+    <button class="tab"     onclick="switchTab('stats')">📊 Stats</button>
+    <button class="tab"     onclick="switchTab('ext')">✨ Extras</button>
+    <button class="tab"     onclick="switchTab('obs')">🖥 OBS</button>
+  </div>
+
+  <!-- ── DONS ── -->
+  <div class="tc on" id="tab-dons">
+    <div id="dons-ct">
+      <div class="empty"><div class="eico">⏳</div><div class="etxt">Chargement…</div></div>
+    </div>
+  </div>
+
+  <!-- ── OBJECTIF ── -->
+  <div class="tc" id="tab-obj">
+    <div class="card">
+      <div class="otop">
+        <div class="iw" onclick="document.getElementById('oi').click()">
+          <img id="oimg" alt=""><div class="iph" id="oph">🖼️</div><div class="iov">✏️</div>
+        </div>
+        <input type="file" id="oi" accept="image/*" style="display:none" onchange="handleObjImg(this)">
+        <div class="ofl">
+          <input class="fi" type="text" id="otit" placeholder="Nom de l'objectif (ex: Config PC)" maxlength="40">
+          <div class="mr">
+            <input class="mi" type="number" id="omnt" placeholder="100000" min="1">
+            <span class="mf">FCFA</span>
+          </div>
+        </div>
+      </div>
+      <div class="slbl">Paliers rapides</div>
+      <div class="pr">
+        <span class="pal" onclick="setPal(50000)">50k</span>
+        <span class="pal" onclick="setPal(100000)">100k</span>
+        <span class="pal" onclick="setPal(200000)">200k</span>
+        <span class="pal" onclick="setPal(300000)">300k</span>
+        <span class="pal" onclick="setPal(500000)">500k</span>
+      </div>
+      <button class="sbtn2" onclick="saveObj()">💾 Enregistrer l'objectif</button>
+      <div class="pw" id="pw" style="display:none">
+        <div class="pt">
+          <div class="pc" id="pc">0 FCFA</div>
+          <div class="pg" id="pg">/ — FCFA</div>
+        </div>
+        <div class="pb"><div class="pf" id="pf" style="width:0%"></div></div>
+        <div class="pp" id="pp">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STATS ── -->
+  <div class="tc" id="tab-stats">
+    <div class="sgrid">
+      <div class="sbox"><div class="sl">Total session</div><div class="sv g" id="stot">—</div><div class="ss">FCFA confirmés</div></div>
+      <div class="sbox"><div class="sl">Dons confirmés</div><div class="sv a" id="scnt">—</div><div class="ss">cette session</div></div>
+    </div>
+    <div class="pad"><div class="slbl">✅ Historique confirmés</div></div>
+    <div id="hist-ct"><div class="empty"><div class="eico">📋</div><div class="etxt">Aucun don confirmé</div></div></div>
+    <div class="pad" style="margin-top:16px"><div class="slbl">🗑 Dons annulés</div></div>
+    <div id="cancel-ct"><div class="empty"><div class="eico">✅</div><div class="etxt">Aucun don annulé</div></div></div>
+    <div class="rc">
+      <div class="rt">🔄 Nouvelle session</div>
+      <div class="rs">Remet le total à zéro et efface l'historique et les annulés. Les dons en attente ne sont pas supprimés.</div>
+      <button class="reb" onclick="resetSess()">Réinitialiser la session</button>
+    </div>
+  </div>
+
+  <!-- ── EXTRAS ── -->
+  <div class="tc" id="tab-ext">
+
+    <div class="pad"><div class="slbl">🏆 Top Donateurs OBS</div></div>
+    <div class="card">
+      <div class="er" style="margin-bottom:12px">
+        <div><div class="et">Activer le classement</div><div class="es">Overlay OBS top donateurs</div></div>
+        <div class="tog" id="tog-top" onclick="togTop()"></div>
+      </div>
+      <div id="top-prev"></div>
+    </div>
+
+    <div class="pad" style="margin-top:8px"><div class="slbl">💬 Message OBS</div></div>
+    <div class="card">
+      <textarea class="msi" id="obsmsg" placeholder="Ex: Bienvenue sur thesouscote ! Faites un don 🎉" maxlength="120"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="eb g" onclick="saveMsg()">💾 Enregistrer</button>
+        <button class="eb r" onclick="clearMsg()">✕ Effacer</button>
+      </div>
+      <div style="font-size:11px;color:var(--fnt);margin-top:8px">S'affiche en bas de l'écran OBS en continu</div>
+    </div>
+
+    <div class="pad" style="margin-top:8px"><div class="slbl">🔔 Son d'alerte</div></div>
+    <div class="card">
+      <div class="er" style="margin-bottom:14px">
+        <div><div class="et">Son actif</div><div class="es">Joue un son à chaque confirmation</div></div>
+        <div class="tog" id="tog-son" onclick="togSon()"></div>
+      </div>
+      <div class="slbl">Sons prédéfinis</div>
+      <div class="sg" id="sgrid">
+        <div class="sb on" data-s="default" onclick="selSon(this,'default')">🔔 Défaut</div>
+        <div class="sb" data-s="chime"   onclick="selSon(this,'chime')">🎵 Chime</div>
+        <div class="sb" data-s="coin"    onclick="selSon(this,'coin')">🪙 Pièce</div>
+        <div class="sb" data-s="fanfare" onclick="selSon(this,'fanfare')">🎺 Fanfare</div>
+        <div class="sb" data-s="custom" id="sb-cus" style="display:none" onclick="selSon(this,'custom')">🎶 Perso</div>
+      </div>
+      <div class="slbl" style="margin-top:14px">Son personnalisé</div>
+      <div class="uz" id="uz" onclick="document.getElementById('sonf').click()">
+        <div class="ui">🎵</div>
+        <div class="ut" id="ut">Appuie pour importer un fichier audio</div>
+        <div class="us">MP3, WAV, OGG — max 2MB</div>
+      </div>
+      <input type="file" id="sonf" accept="audio/*" style="display:none" onchange="handleSon(this)">
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="eb" style="flex:1" onclick="testSon()">▶ Tester</button>
+        <button class="eb r" id="clr-son" style="display:none" onclick="clearSon()">🗑 Supprimer</button>
+      </div>
+    </div>
+
+    <div class="pad" style="margin-top:8px"><div class="slbl">🖼️ Image alerte OBS</div></div>
+    <div class="card">
+      <div class="er" style="margin-bottom:14px">
+        <div><div class="et">Image au-dessus de l'alerte</div><div class="es">S'affiche sur toutes les alertes</div></div>
+        <div class="tog" id="tog-ai" onclick="togAImg()"></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="aip" onclick="document.getElementById('aif').click()">
+          <img id="aith" src="" alt=""><div id="aiph" style="font-size:28px;opacity:.3">🖼️</div><div class="iov">✏️</div>
+        </div>
+        <input type="file" id="aif" accept="image/*" style="display:none" onchange="handleAImg(this)">
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--mut);margin-bottom:8px">PNG, JPG, GIF animé — max 3MB</div>
+          <button class="eb" style="width:100%;margin-bottom:8px" onclick="document.getElementById('aif').click()">📁 Choisir</button>
+          <button class="eb r" id="clr-ai" style="display:none;width:100%" onclick="clearAImg()">🗑 Supprimer</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── OBS ── -->
+  <div class="tc" id="tab-obs">
+    <div class="po">
+      <div class="ps">
+        <div class="pb2"><div class="ld"></div>Aperçu — obs-alert.html</div>
+        <div class="pbd">
+          <div>
+            <div class="pm"><span class="ph">Khalil</span> a donné <span class="ph">2 000 FCFA</span></div>
+            <div class="psu">« Bonne chance pour le stream ! »</div>
+          </div>
+        </div>
+      </div>
+      <div class="slbl">Alerte don</div>
+      <div class="ub bl" onclick="cpUrl(this)">https://don-wave-thesouscote.netlify.app/obs-alert.html</div>
+      <div class="uh">Appuie pour copier</div>
+      <div class="slbl">Barre de progression</div>
+      <div class="ub or" onclick="cpUrl(this)">https://don-wave-thesouscote.netlify.app/goal.html</div>
+      <div class="uh">Appuie pour copier</div>
+      <div class="slbl">Top Donateurs</div>
+      <div class="ub gr" onclick="cpUrl(this)">https://don-wave-thesouscote.netlify.app/top.html</div>
+      <div class="uh">Appuie pour copier</div>
+      <div class="slbl">Message personnalisé</div>
+      <div class="ub pu" onclick="cpUrl(this)">https://don-wave-thesouscote.netlify.app/message.html</div>
+      <div class="uh">Appuie pour copier</div>
+      <div class="pa">
+        <div class="pbt" onclick="testAlert()">🔔 Tester alerte</div>
+        <div class="pbt pr2" onclick="switchTab('dons')">📋 Voir les dons</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { db, auth } from "./firebase-config.js";
+import { 
+  ref, get, set, push, update, remove, onValue 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { 
+  signInWithEmailAndPassword, onAuthStateChanged, signOut 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// ── AUTH LOGIC ──
+window.login = async () => {
+  const email = document.getElementById("email-input").value.trim();
+  const pass = document.getElementById("pwd-input").value;
+  const btn = document.getElementById("login-btn");
+  const err = document.getElementById("pwd-err");
+  
+  if(!email || !pass) return;
+  
+  btn.disabled = true;
+  btn.textContent = "Connexion...";
+  
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    err.style.opacity = "1";
+    document.getElementById("pwd-input").style.borderColor = "var(--red)";
+    setTimeout(() => { 
+      err.style.opacity = "0"; 
+      document.getElementById("pwd-input").style.borderColor = "var(--bor)"; 
+    }, 2500);
+    btn.disabled = false;
+    btn.textContent = "Se connecter";
+  }
+};
+
+window.logout = () => signOut(auth);
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("lock").style.display = "none";
+    document.getElementById("main-page").style.display = "";
+    initApp();
+  } else {
+    document.getElementById("lock").style.display = "flex";
+    document.getElementById("main-page").style.display = "none";
+    document.getElementById("email-input").focus();
+  }
+});
+
+// ── STATE ──
+let objImg = null, alertImg = null, customSon = null;
+let sonOn = false, topOn = false, aiOn = false;
+let curSon = "default";
+
+const SONS = {
+  default:"https://cdn.freesound.org/previews/411/411089_5121236-lq.mp3",
+  chime:"https://cdn.freesound.org/previews/220/220173_4100752-lq.mp3",
+  coin:"https://cdn.freesound.org/previews/341/341695_5858296-lq.mp3",
+  fanfare:"https://cdn.freesound.org/previews/397/397354_4284968-lq.mp3"
+};
+
+// ── UTILS ──
+function fmt(n){ return Number(n||0).toLocaleString("fr"); }
+function ago(ts){
+  if(!ts) return "";
+  const d = Math.floor((Date.now()-ts)/1000);
+  if(d<60) return "À l'instant";
+  if(d<3600) return Math.floor(d/60)+"min";
+  if(d<86400) return Math.floor(d/3600)+"h";
+  return Math.floor(d/86400)+"j";
+}
+function toast(m){
+  const t = document.getElementById("toast");
+  t.textContent = m;
+  t.classList.add("on");
+  setTimeout(()=>t.classList.remove("on"), 2400);
+}
+function sonUrl(){
+  return (curSon==="custom" && customSon) ? customSon : (SONS[curSon]||SONS.default);
+}
+
+// ── DATABASE WRAPPERS ──
+async function fbGet(path) {
+  const s = await get(ref(db, path));
+  return s.exists() ? s.val() : null;
+}
+async function fbSet(path, data, method = "PUT") {
+  if (method === "PATCH") return update(ref(db, path), data);
+  if (method === "POST") return push(ref(db, path), data);
+  return set(ref(db, path), data);
+}
+async function fbDel(path) {
+  return remove(ref(db, path));
+}
+
+// ── APP LOGIC ──
+function initApp() {
+  onValue(ref(db, "queue"), (s) => renderDons(s.val()));
+  onValue(ref(db, "session"), (s) => {
+    const data = s.val();
+    const total = (data && data.total) || 0;
+    document.getElementById("stot").textContent = fmt(total);
+    fbGet("objectif").then(obj => { if(obj) refreshProg(obj.montant); });
+  });
+  
+  loadStats();
+  loadObj();
+  loadExt();
+}
+
+// ── TABS ──
+window.switchTab = (name) => {
+  const TABS = ["dons","obj","stats","ext","obs"];
+  TABS.forEach((n,i)=>{
+    document.querySelectorAll(".tab")[i].classList.toggle("on", n===name);
+    document.getElementById("tab-"+n).classList.toggle("on", n===name);
+  });
+  if(name==="stats") loadStats();
+  if(name==="obj") loadObj();
+  if(name==="ext") loadExt();
+};
+
+window.doRefresh = () => {
+  const b = document.getElementById("rbtn");
+  b.classList.add("spin");
+  setTimeout(()=>b.classList.remove("spin"), 600);
+  loadStats();
+};
+
+// ── OBJECTIF ──
+window.handleObjImg = (inp) => {
+  const f = inp.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    objImg = e.target.result;
+    document.getElementById("oimg").src = objImg;
+    document.getElementById("oimg").style.display = "block";
+    document.getElementById("oph").style.display = "none";
+  };
+  r.readAsDataURL(f);
+};
+
+window.setPal = (v) => { document.getElementById("omnt").value = v; };
+
+async function loadObj(){
+  try{
+    const d = await fbGet("objectif");
+    if(!d) return;
+    if(d.title) document.getElementById("otit").value = d.title;
+    if(d.montant) document.getElementById("omnt").value = d.montant;
+    if(d.img){
+      objImg = d.img;
+      document.getElementById("oimg").src = d.img;
+      document.getElementById("oimg").style.display = "block";
+      document.getElementById("oph").style.display = "none";
+    }
+    refreshProg(d.montant);
+  }catch(e){}
+}
+
+async function refreshProg(goal){
+  if(!goal) return;
+  try{
+    const d = await fbGet("session");
+    const total = (d&&d.total)||0;
+    const pct = Math.min(100, Math.round((total/goal)*100));
+    document.getElementById("pc").textContent = fmt(total)+" FCFA";
+    document.getElementById("pg").textContent = "/ "+fmt(goal)+" FCFA";
+    document.getElementById("pf").style.width = pct+"%";
+    document.getElementById("pp").textContent = pct+"%";
+    document.getElementById("pw").style.display = "block";
+    document.querySelectorAll(".pal").forEach(p=>{
+      p.classList.toggle("ok", total >= parseInt(p.textContent)*1000);
+    });
+  }catch(e){}
+}
+
+window.saveObj = async () => {
+  const title = document.getElementById("otit").value.trim()||"Objectif";
+  const montant = parseInt(document.getElementById("omnt").value)||0;
+  if(montant<1){ toast("⚠️ Entre un montant valide"); return; }
+  try{
+    await fbSet("objectif",{title,montant,img:objImg||null});
+    toast("✅ Objectif enregistré !");
+    refreshProg(montant);
+  }catch(e){ toast("⚠️ Erreur"); }
+};
+
+// ── DONS ──
+function renderDons(data){
+  const st = document.getElementById("stxt");
+  const sb = document.getElementById("sbdg");
+  const ct = document.getElementById("dons-ct");
+  const entries = data && typeof data==="object"
+    ? Object.entries(data).filter(([,v])=>v.confirmed!==true).sort(([,a],[,b])=>(a.ts||0)-(b.ts||0))
+    : [];
+  if(!entries.length){
+    st.textContent = "Aucun don en attente"; sb.style.display = "none";
+    ct.innerHTML = '<div class="empty"><div class="eico">🎉</div><div class="etxt">Tout est traité !</div></div>';
+    return;
+  }
+  st.textContent = "En direct"; sb.style.display = ""; sb.textContent = entries.length+" don"+(entries.length>1?"s":"");
+  const wrap = document.createElement("div"); wrap.className = "dlist";
+  entries.forEach(([key,don],i)=>{
+    const nom = don.nom||"Anonyme";
+    const msg = don.message&&don.message.trim() ? don.message.trim() : null;
+    const card = document.createElement("div");
+    card.className = "dc"; card.id = "card-"+key;
+    card.style.animationDelay = (i*0.05)+"s";
+    card.innerHTML =
+      '<div class="db"><div class="dt"><div class="dn'+(nom==="Anonyme"?" dan":"")+'">'+nom+'</div><div><span class="dm">'+fmt(don.montant)+'</span><span class="df"> FCFA</span></div></div>'+(msg?'<div class="dmsg">'+msg+'</div>':"")+'<div class="dti">'+ago(don.ts)+'</div></div>'+
+      '<div class="da"><button class="ab c">✅ Confirmer</button><button class="ab d">🗑 Supprimer</button></div>';
+    card.querySelector(".ab.c").addEventListener("click", ()=>confirmDon(key));
+    card.querySelector(".ab.d").addEventListener("click", ()=>deleteDon(key));
+    wrap.appendChild(card);
+  });
+  ct.innerHTML = ""; ct.appendChild(wrap);
+}
+
+function removeCard(key){
+  const c = document.getElementById("card-"+key);
+  if(!c) return;
+  c.classList.add("ex");
+  setTimeout(()=>{ c.remove(); updateBadge(); }, 280);
+}
+
+function updateBadge(){
+  const cards = document.querySelectorAll(".dc:not(.ex)");
+  const sb = document.getElementById("sbdg");
+  const st = document.getElementById("stxt");
+  if(!cards.length){
+    sb.style.display = "none"; st.textContent = "Aucun don en attente";
+    document.getElementById("dons-ct").innerHTML = '<div class="empty"><div class="eico">🎉</div><div class="etxt">Tout est traité !</div></div>';
+  } else {
+    sb.textContent = cards.length+" don"+(cards.length>1?"s":"");
+  }
+}
+
+async function confirmDon(key){
+  const card = document.getElementById("card-"+key); if(!card) return;
+  if(card.dataset.processing) return;
+  card.dataset.processing = "1";
+  card.classList.add("ok2");
+  card.querySelectorAll("button").forEach(b=>b.disabled=true);
+  
+  try{
+    const don = await fbGet("queue/"+key);
+    if(!don) throw new Error();
+    
+    await fbSet("queue/"+key, {confirmed:true}, "PATCH");
+    await fbSet("history", Object.assign({},don,{confirmedAt:Date.now()}), "POST");
+    
+    const ses = await fbGet("session");
+    await fbSet("session", {total:((ses&&ses.total)||0)+(don.montant||0), updatedAt:Date.now()});
+    
+    removeCard(key);
+    toast("✅ Don confirmé — OBS affiche l'alerte !");
+    if(sonOn){ try{ new Audio(sonUrl()).play(); }catch(e){} }
+  }catch(e){ card.classList.remove("ok2"); card.dataset.processing=""; card.querySelectorAll("button").forEach(b=>b.disabled=false); toast("⚠️ Erreur"); }
+}
+
+async function deleteDon(key){
+  const card = document.getElementById("card-"+key); if(!card) return;
+  if(card.dataset.processing) return;
+  card.dataset.processing = "1";
+  card.classList.add("ko2");
+  card.querySelectorAll("button").forEach(b=>b.disabled=true);
+  
+  try{
+    const don = await fbGet("queue/"+key);
+    if(!don) throw new Error();
+    
+    await fbDel("queue/"+key);
+    await fbSet("cancelled", Object.assign({},don,{cancelledAt:Date.now()}), "POST");
+    
+    removeCard(key);
+    toast("🗑 Don annulé");
+  }catch(e){ card.classList.remove("ko2"); card.dataset.processing=""; card.querySelectorAll("button").forEach(b=>b.disabled=false); toast("⚠️ Erreur"); }
+}
+
+// ── STATS ──
+async function loadStats(){
+  try{
+    const [hd,sd,cd] = await Promise.all([
+      fbGet("history"), fbGet("session"), fbGet("cancelled")
+    ]);
+    const total = (sd&&sd.total)||0;
+    const hList = hd&&typeof hd==="object" ? Object.values(hd).sort((a,b)=>(b.confirmedAt||0)-(a.confirmedAt||0)) : [];
+    document.getElementById("stot").textContent = fmt(total);
+    document.getElementById("scnt").textContent = hList.length;
+    
+    if(!hList.length){
+      document.getElementById("hist-ct").innerHTML = '<div class="empty"><div class="eico">📋</div><div class="etxt">Aucun don confirmé</div></div>';
+    } else {
+      const hw = document.createElement("div"); hw.className = "hl";
+      hList.forEach(don=>{
+        const msg = don.message&&don.message.trim() ? don.message.trim() : null;
+        const item = document.createElement("div"); item.className = "hi";
+        item.innerHTML =
+          '<div><div class="hnom">'+( don.nom||"Anonyme")+'</div>'+(msg?'<div class="hmsg">« '+msg+' »</div>':"")+'</div>'
+          +'<div style="text-align:right"><div class="hmnt">+'+fmt(don.montant)+' FCFA</div><div class="hti">'+ago(don.confirmedAt)+'</div></div>';
+        hw.appendChild(item);
+      });
+      document.getElementById("hist-ct").innerHTML = ""; document.getElementById("hist-ct").appendChild(hw);
+    }
+    
+    const cList = cd&&typeof cd==="object" ? Object.entries(cd).sort(([,a],[,b])=>(b.cancelledAt||0)-(a.cancelledAt||0)) : [];
+    if(!cList.length){
+      document.getElementById("cancel-ct").innerHTML = '<div class="empty"><div class="eico">✅</div><div class="etxt">Aucun don annulé</div></div>';
+    } else {
+      const cw = document.createElement("div"); cw.className = "hl";
+      cList.forEach(([ckey,don])=>{
+        const msg = don.message&&don.message.trim() ? don.message.trim() : null;
+        const item = document.createElement("div"); item.className = "hi can";
+        item.innerHTML = '<div><div class="hnom r">'+(don.nom||"Anonyme")+'</div>'+(msg?'<div class="hmsg">« '+msg+' »</div>':"")+'<div class="hti">'+ago(don.cancelledAt)+'</div></div>'+
+          '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="hmnt r">'+fmt(don.montant)+' FCFA</div><button class="reaf">↩ Réafficher</button></div>';
+        item.querySelector(".reaf").addEventListener("click", ()=>reafficher(ckey,don));
+        cw.appendChild(item);
+      });
+      document.getElementById("cancel-ct").innerHTML = ""; document.getElementById("cancel-ct").appendChild(cw);
+    }
+    loadTopPrev();
+  }catch(e){}
+}
+
+async function reafficher(ckey,don){
+  try{
+    await fbSet("queue", {nom:don.nom, montant:don.montant, message:don.message||"", confirmed:false, ts:Date.now()}, "POST");
+    await fbDel("cancelled/"+ckey);
+    toast("↩ Don remis en attente !");
+    loadStats();
+  }catch(e){ toast("⚠️ Erreur"); }
+}
+
+window.resetSess = async () => {
+  if(!confirm("Réinitialiser ? Total, historique et annulés seront effacés.")) return;
+  try{
+    await Promise.all([
+      fbSet("session",{total:0,updatedAt:Date.now()}),
+      fbDel("history"),
+      fbDel("cancelled")
+    ]);
+    toast("🔄 Session réinitialisée !"); loadStats();
+  }catch(e){ toast("⚠️ Erreur"); }
+};
+
+// ── EXTRAS ──
+async function loadExt(){
+  try{
+    const d = await fbGet("extras");
+    if(!d) return;
+    sonOn = !!d.sonActif; topOn = !!d.topActif; aiOn = !!d.alertImgActif;
+    curSon = d.selectedSon||"default";
+    document.getElementById("tog-son").classList.toggle("on",sonOn);
+    document.getElementById("tog-top").classList.toggle("on",topOn);
+    document.getElementById("tog-ai").classList.toggle("on",aiOn);
+    if(d.obsMsg) document.getElementById("obsmsg").value = d.obsMsg;
+    document.querySelectorAll(".sb").forEach(b=>b.classList.toggle("on",b.dataset.s===curSon));
+    if(d.customSon){
+      customSon = d.customSon;
+      document.getElementById("uz").classList.add("has");
+      document.getElementById("ut").textContent = "✅ "+(d.customSonName||"Son personnalisé");
+      document.getElementById("sb-cus").style.display = "";
+      document.getElementById("clr-son").style.display = "";
+    }
+    if(d.alertImg){
+      alertImg = d.alertImg;
+      document.getElementById("aith").src = d.alertImg;
+      document.getElementById("aith").style.display = "block";
+      document.getElementById("aiph").style.display = "none";
+      document.getElementById("clr-ai").style.display = "";
+    }
+    loadTopPrev();
+  }catch(e){}
+}
+
+async function saveExt(patch){ try{ await fbSet("extras",patch,"PATCH"); }catch(e){} }
+window.togTop = () => { topOn=!topOn; document.getElementById("tog-top").classList.toggle("on",topOn); saveExt({topActif:topOn}); toast(topOn?"🏆 Classement activé":"Classement désactivé"); };
+window.togSon = () => { sonOn=!sonOn; document.getElementById("tog-son").classList.toggle("on",sonOn); saveExt({sonActif:sonOn}); toast(sonOn?"🔔 Son activé":"🔕 Son désactivé"); };
+window.togAImg = () => { aiOn=!aiOn; document.getElementById("tog-ai").classList.toggle("on",aiOn); saveExt({alertImgActif:aiOn}); toast(aiOn?"🖼️ Image activée":"Image désactivée"); };
+
+window.selSon = (el,s) => {
+  curSon=s;
+  document.querySelectorAll(".sb").forEach(b=>b.classList.remove("on"));
+  el.classList.add("on");
+  saveExt({selectedSon:s});
+};
+
+window.testSon = () => { try{ new Audio(sonUrl()).play(); }catch(e){} toast("▶ Test du son !"); };
+
+window.handleSon = (inp) => {
+  const f=inp.files[0]; if(!f) return;
+  if(f.size>2*1024*1024){ toast("⚠️ Max 2MB"); return; }
+  const r=new FileReader();
+  r.onload=async e=>{
+    customSon=e.target.result;
+    document.getElementById("uz").classList.add("has");
+    document.getElementById("ut").textContent="✅ "+f.name;
+    document.getElementById("sb-cus").style.display="";
+    document.getElementById("clr-son").style.display="";
+    selSon(document.getElementById("sb-cus"),"custom");
+    await saveExt({customSon,customSonName:f.name,selectedSon:"custom"});
+    toast("🎵 Son importé !");
+  };
+  r.readAsDataURL(f);
+};
+
+window.clearSon = async () => {
+  customSon=null;
+  document.getElementById("uz").classList.remove("has");
+  document.getElementById("ut").textContent="Appuie pour importer un fichier audio";
+  document.getElementById("sb-cus").style.display="none";
+  document.getElementById("clr-son").style.display="none";
+  curSon="default";
+  document.querySelectorAll(".sb").forEach(b=>b.classList.toggle("on",b.dataset.s==="default"));
+  await saveExt({customSon:null,customSonName:null,selectedSon:"default"});
+  toast("🗑 Son supprimé");
+};
+
+window.handleAImg = (inp) => {
+  const f=inp.files[0]; if(!f) return;
+  if(f.size>3*1024*1024){ toast("⚠️ Max 3MB"); return; }
+  const r=new FileReader();
+  r.onload=async e=>{
+    alertImg=e.target.result;
+    document.getElementById("aith").src=alertImg;
+    document.getElementById("aith").style.display="block";
+    document.getElementById("aiph").style.display="none";
+    document.getElementById("clr-ai").style.display="";
+    aiOn=true; document.getElementById("tog-ai").classList.add("on");
+    await saveExt({alertImg,alertImgActif:true});
+    toast("🖼️ Image enregistrée !");
+  };
+  r.readAsDataURL(f);
+};
+
+window.clearAImg = async () => {
+  alertImg=null; aiOn=false;
+  document.getElementById("aith").style.display="none";
+  document.getElementById("aiph").style.display="";
+  document.getElementById("clr-ai").style.display="none";
+  document.getElementById("tog-ai").classList.remove("on");
+  await saveExt({alertImg:null,alertImgActif:false});
+  toast("🗑 Image supprimée");
+};
+
+window.saveMsg = async () => {
+  const m=document.getElementById("obsmsg").value.trim();
+  await saveExt({obsMsg:m}); toast("✅ Message enregistré !");
+};
+
+window.clearMsg = async () => {
+  document.getElementById("obsmsg").value="";
+  await saveExt({obsMsg:""}); toast("🗑 Message effacé");
+};
+
+async function loadTopPrev(){
+  try{
+    const d=await fbGet("history");
+    if(!d||typeof d!=="object"){ document.getElementById("top-prev").innerHTML=""; return; }
+    const agg=Object.values(d).reduce((a,don)=>{ const k=don.nom||"Anonyme"; a[k]=(a[k]||0)+(don.montant||0); return a; },{});
+    const sorted=Object.entries(agg).sort(([,a],[,b])=>b-a).slice(0,3);
+    const medals=["🥇","🥈","🥉"];
+    const wrap=document.createElement("div");
+    sorted.forEach(([nom,tot],i)=>{
+      const row=document.createElement("div"); row.className="ti";
+      row.innerHTML='<span class="tr">'+medals[i]+'</span><span class="tn">'+nom+'</span><span class="tm">'+fmt(tot)+' FCFA</span>';
+      wrap.appendChild(row);
+    });
+    if(!sorted.length) wrap.innerHTML='<div style="font-size:12px;color:var(--fnt);text-align:center;padding:8px">Aucun don confirmé</div>';
+    document.getElementById("top-prev").innerHTML="";
+    document.getElementById("top-prev").appendChild(wrap);
+  }catch(e){}
+}
+
+window.testAlert = async () => {
+  try{
+    await fbSet("queue", {nom:"Test",montant:1000,message:"Ceci est un test !",confirmed:false,ts:Date.now()}, "POST");
+    toast("🔔 Don test ajouté !"); setTimeout(()=>switchTab("dons"),800);
+  }catch(e){ toast("⚠️ Erreur"); }
+  document.getElementById("lock").style.display = "none";
+  document.getElementById("main-page").style.display = "";
+  loadDons();
+} else {
+  setTimeout(()=>document.getElementById("pwd-input").focus(), 100);
+}
+setInterval(loadDons, 5000);
+</script>
+</body>
+</html>

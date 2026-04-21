@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>OBS Goal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:transparent;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:flex-end;justify-content:center;min-height:100vh;padding:24px}
+.w{width:100%;max-width:520px;animation:ap .6s cubic-bezier(.34,1.2,.64,1) forwards}
+@keyframes ap{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.oi{width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,.1);display:none}
+.oi.show{display:block}
+.oph{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.inf{flex:1;min-width:0}
+.tit{font-size:13px;font-weight:700;color:rgba(255,255,255,.7);text-shadow:0 1px 8px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.ams{display:flex;align-items:baseline;gap:6px}
+.ac{font-size:22px;font-weight:800;color:#30d158;letter-spacing:-.03em;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+.sep{font-size:13px;color:rgba(255,255,255,.25)}
+.ag{font-size:14px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:-.02em}
+.pct{font-size:12px;font-weight:800;color:#0a84ff;background:rgba(10,132,255,.2);border:1px solid rgba(10,132,255,.3);padding:3px 9px;border-radius:99px;flex-shrink:0;align-self:center}
+.bb{height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.bf{height:100%;background:linear-gradient(90deg,#30d158,#34c759,#0a84ff);background-size:200% 100%;border-radius:99px;transition:width 1s cubic-bezier(.34,1.2,.64,1);min-width:8px;animation:sh 2.5s linear infinite;position:relative}
+@keyframes sh{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.bf::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:12px;height:12px;background:#fff;border-radius:50%;box-shadow:0 0 8px rgba(48,209,88,.8)}
+.ms{display:flex;justify-content:space-between;margin-top:8px}
+.mi{font-size:10px;font-weight:700;color:rgba(255,255,255,.2);text-shadow:0 1px 6px rgba(0,0,0,.9);transition:color .4s}
+.mi.ok{color:#30d158}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="top">
+    <img class="oi" id="oi" alt="">
+    <div class="oph" id="oph">🎯</div>
+    <div class="inf">
+      <div class="tit" id="tit">Objectif en cours</div>
+      <div class="ams">
+        <div class="ac" id="ac">0 FCFA</div>
+        <div class="sep">/</div>
+        <div class="ag" id="ag">— FCFA</div>
+      </div>
+    </div>
+    <div class="pct" id="pct">0%</div>
+  </div>
+  <div class="bb"><div class="bf" id="bf" style="width:0%"></div></div>
+  <div class="ms" id="ms"></div>
+</div>
+<script type="module">
+import { db } from "./firebase-config.js";
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+function fmt(n){ return Number(n||0).toLocaleString("fr"); }
+
+let currentGoal = 0;
+let currentTotal = 0;
+let currentObj = null;
+
+function refreshUI() {
+  if(!currentObj || !currentGoal) return;
+  const pct = Math.min(100, Math.round((currentTotal/currentGoal)*100));
+  
+  if(currentObj.img){
+    document.getElementById("oi").src = currentObj.img;
+    document.getElementById("oi").classList.add("show");
+    document.getElementById("oph").style.display = "none";
+  } else {
+    document.getElementById("oi").classList.remove("show");
+    document.getElementById("oph").style.display = "flex";
+  }
+  
+  document.getElementById("tit").textContent = currentObj.title || "Objectif";
+  document.getElementById("ac").textContent = fmt(currentTotal) + " FCFA";
+  document.getElementById("ag").textContent = fmt(currentGoal) + " FCFA";
+  document.getElementById("pct").textContent = pct + "%";
+  document.getElementById("bf").style.width = pct + "%";
+  
+  const steps = [.25, .5, .75, 1];
+  document.getElementById("ms").innerHTML = steps.map(s => {
+    const v = Math.round(currentGoal * s);
+    return '<span class="mi' + (currentTotal >= v ? " ok" : "") + '">' + fmt(v) + '</span>';
+  }).join("");
+}
+
+// Écouter l'objectif
+onValue(ref(db, "objectif"), (snapshot) => {
+  const data = snapshot.val();
+  if(!data) return;
+  currentObj = data;
+  currentGoal = data.montant || 0;
+  refreshUI();
+});
+
+// Écouter la session (total actuel)
+onValue(ref(db, "session"), (snapshot) => {
+  const data = snapshot.val();
+  currentTotal = (data && data.total) || 0;
+  refreshUI();
+});
+</script>
+</body>
+</html>
